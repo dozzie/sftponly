@@ -7,6 +7,7 @@
 #include <pwd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <errno.h>
 
 //----------------------------------------------------------------------------
 
@@ -35,11 +36,26 @@ struct passwd *getpwuid(uid_t uid)
 
 //----------------------------------------------------------------------------
 
-// hack, zeby sftp-server nie wymagal /dev/null (zakladam, ze deskryptory 0,
-// 1 i 2 sa otwarte)
+// zywcem wziete z misc.c ze zrodel OpenSSH
 void sanitise_stdfd(void)
 {
-  return;
+  int nullfd, dupfd;
+
+  if ((nullfd = dupfd = open("/dev/null", O_RDWR)) == -1) {
+    fprintf(stderr, "Couldn't open /dev/null: %s", strerror(errno));
+    exit(2);
+  }
+  while (++dupfd <= 2) {
+    /* Only clobber closed fds */
+    if (fcntl(dupfd, F_GETFL, 0) >= 0)
+      continue;
+    if (dup2(nullfd, dupfd) == -1) {
+      fprintf(stderr, "dup2: %s", strerror(errno));
+      exit(3);
+    }
+  } 
+  if (nullfd > 2)
+    close(nullfd);
 }
 
 //----------------------------------------------------------------------------
@@ -52,7 +68,7 @@ int main(int argc, char **argv, char **env)
       strcmp((slash = strrchr(argv[2], '/')) ? slash + 1 : argv[2],
              "sftp-server") != 0) {
     // nie-sftp
-    //fprintf(stderr, "Usage outside sftp protocol prohibited\n");
+    fprintf(stderr, "Usage outside sftp protocol prohibited\n");
     return 1;
   }
 
@@ -63,18 +79,18 @@ int main(int argc, char **argv, char **env)
   if (login == NULL)
     login = getenv("LOGNAME");
 
-  struct passwd *entry;
+  struct passwd *pwd_entry;
 
-  if (login == NULL || (entry = getpwnam(login)) == NULL ||
-      entry->pw_uid != getuid()) {
-    //fprintf(stderr, "Unknown user (UID %d)\n", getuid());
+  if (login == NULL || (pwd_entry = getpwnam(login)) == NULL ||
+      pwd_entry->pw_uid != getuid()) {
+    fprintf(stderr, "Unknown user (UID %d)", getuid());
     return 1;
   }
 
   // pozniej &user bedzie zwracane przez getpwuid()
-  user.pw_name = strdup(entry->pw_name);
-  user.pw_uid  = entry->pw_uid;
-  user.pw_gid  = entry->pw_gid;
+  user.pw_name = strdup(pwd_entry->pw_name);
+  user.pw_uid  = pwd_entry->pw_uid;
+  user.pw_gid  = pwd_entry->pw_gid;
 
   //--------------------------------------------------------------------------
   // zdobywam adres glownej funkcji sftp-servera
@@ -82,14 +98,14 @@ int main(int argc, char **argv, char **env)
   void *sftps_lib = dlopen(SFTP_SERVER, RTLD_NOW);
 
   if (sftps_lib == NULL) {
-    //fprintf(stderr, "dlopen() failed: %s\n", dlerror());
+    fprintf(stderr, "dlopen() failed: %s", dlerror());
     return 1;
   }
 
   int (*sftps_main)(int, char **, char **) = dlsym(sftps_lib, "main");
 
   if (sftps_main == NULL) {
-    //fprintf(stderr, "dlsym() failed: %s\n", dlerror());
+    fprintf(stderr, "dlsym() failed: %s", dlerror());
     dlclose(sftps_lib);
     return 1;
   }
@@ -98,10 +114,13 @@ int main(int argc, char **argv, char **env)
   // wywolanie wlasciwe
 
   // cd $HOME
-  if (chdir(user.pw_dir)) {
+  if (chdir(pwd_entry->pw_dir)) {
     perror("chdir($HOME) failed");
     return 1;
   }
+
+  // upewniam sie, ze standardowe deskryptory sa pootwierane
+  sanitise_stdfd();
 
   chroot(".");
 
