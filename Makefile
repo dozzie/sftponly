@@ -18,8 +18,6 @@ all: $(TARGET)
 
 $(TARGET): $(TARGET).o
 	$(LD) $(filter %.o, $^) -o $@ $(LDFLAGS)
-	sudo chown root:root $@
-	sudo chmod u+s $@
 
 tags: $(addsuffix .c, $(OBJS)) $(HEADS)
 	ctags $^
