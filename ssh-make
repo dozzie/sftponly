@@ -1,4 +1,4 @@
 #!/bin/sh
 
-patch -p1 < sftp-server.patch
+patch < sftp-server.patch
 make sftp-server.so 'LD=$(CC) -shared -fPIC' EXEEXT=.so
