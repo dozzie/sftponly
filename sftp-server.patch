@@ -1,11 +1,11 @@
---- sftp-server.c      2006-11-17 01:51:10.000000000 +0100
-+++ sftp-server.c.orig       2006-11-17 01:51:15.000000000 +0100
-@@ -1217,7 +1217,7 @@
-        extern char *__progname;
+--- openssh-5.1p1/sftp-server-main.c.orig	2009-10-07 12:50:51.000000000 +0200
++++ openssh-5.1p1/sftp-server-main.c	2009-10-07 12:50:53.000000000 +0200
+@@ -39,7 +39,7 @@
+ 	struct passwd *user_pw;
  
-        /* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
--       sanitise_stdfd();
-+       //sanitise_stdfd();
+ 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+-	sanitise_stdfd();
++	//sanitise_stdfd();
  
-        __progname = ssh_get_progname(argv[0]);
-        log_init(__progname, log_level, log_facility, log_stderr);
+ 	if ((user_pw = getpwuid(getuid())) == NULL) {
+ 		fprintf(stderr, "No user found for uid %lu", (u_long)getuid());

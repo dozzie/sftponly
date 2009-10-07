@@ -11,7 +11,9 @@
 
 //----------------------------------------------------------------------------
 
-#define SFTP_SERVER "/usr/local/lib/sftp-server.so"
+#ifndef SFTP_SERVER
+#  define SFTP_SERVER "/usr/local/lib/sftp-server.so"
+#endif
 
 //----------------------------------------------------------------------------
 
