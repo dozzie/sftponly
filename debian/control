@@ -1,0 +1,11 @@
+Source: sftponly
+Maintainer: Stanislaw 'dozzie' Klekot <dozzie@jarowit.net>
+Section: misc
+Priority: optional
+
+Package: sftponly
+Architecture: any
+Depends: ssh-server
+Description: simple chroot() shell for sftp-only accounts
+ Simple zero-administration shell for chroot() accounts which require sftp
+ access and nothing more.

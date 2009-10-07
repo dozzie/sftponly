@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+clean:
+	@echo cleaning
+
+build:
+	@echo this target is TODO; false
+	printf '#!/bin/sh\necho "Jestem sobie tajnym skryptem"' > script.sh
+	chmod a+x script.sh
+
+.PHONY: stamp
+
+binary: stamp
+	dh_install
+	dh_gencontrol
+	dh_builddeb
+#	dh_clean
+
+stamp:
+	dh_testdir
+	dh_testroot
+	dh_clean

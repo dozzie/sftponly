@@ -1,0 +1,2 @@
+sftponly usr/sbin
+sftp-server.so usr/lib/openssh
