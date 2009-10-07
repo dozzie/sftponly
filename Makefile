@@ -27,7 +27,7 @@ sftp-server.so: $(OPENSSH_DIR)/sftp-server.so
 
 $(OPENSSH_DIR)/sftp-server.so: $(OPENSSH_DIR)/Makefile
 	patch -p1 -d $(OPENSSH_DIR) < sftp-server.patch
-	make sftp-server.so 'LD=$(CC) -shared -fPIC' EXEEXT=.so -C $(OPENSSH_DIR)
+	make sftp-server.so 'LD=$(CC) -shared -fPIC' 'CC=$(CC) -fPIC' EXEEXT=.so -C $(OPENSSH_DIR)
 
 $(OPENSSH_DIR)/Makefile: $(OPENSSH_TARBALL)
 	tar zxf $<
