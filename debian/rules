@@ -10,6 +10,7 @@ build:
 .PHONY: stamp
 
 binary: stamp
+	dh_strip
 	dh_install
 	dh_gencontrol
 	dh_builddeb
