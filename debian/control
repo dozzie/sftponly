@@ -1,7 +1,8 @@
 Source: sftponly
-Maintainer: Stanislaw 'dozzie' Klekot <dozzie@jarowit.net>
+Maintainer: Stanislaw Klekot (dozzie) <dozzie@jarowit.net>
 Section: misc
 Priority: optional
+Build-Depends: zlib1g-dev, libssl-dev
 
 Package: sftponly
 Architecture: any

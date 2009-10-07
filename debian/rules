@@ -4,9 +4,8 @@ clean:
 	@echo cleaning
 
 build:
-	@echo this target is TODO; false
-	printf '#!/bin/sh\necho "Jestem sobie tajnym skryptem"' > script.sh
-	chmod a+x script.sh
+	make sftponly SFTPSERVER_DIR=/usr/lib/openssh
+	make sftp-server.so
 
 .PHONY: stamp
 

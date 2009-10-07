@@ -47,3 +47,4 @@ run: $(TARGET)
 
 clean:
 	rm -f core *.so *.o tags $(TARGET)
+	rm -rf $(OPENSSH_DIR)
