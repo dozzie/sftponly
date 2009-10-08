@@ -43,9 +43,9 @@ mkdir -p $RPM_BUILD_ROOT%{_openssh_libexec_dir}
 mkdir -p $RPM_BUILD_ROOT%{_defaultdocdir}/sftponly-%{_version}
 
 cd sftponly-%{_version}
-install -m 755 sftponly       $RPM_BUILD_ROOT%{_sbindir}
-install -m 755 sftp-server.so $RPM_BUILD_ROOT%{_openssh_libexec_dir}
-install -m 644 README         $RPM_BUILD_ROOT%{_defaultdocdir}/sftponly-%{_version}
+install -m 755 -s sftponly       $RPM_BUILD_ROOT%{_sbindir}
+install -m 755 -s sftp-server.so $RPM_BUILD_ROOT%{_openssh_libexec_dir}
+install -m 644 README            $RPM_BUILD_ROOT%{_defaultdocdir}/sftponly-%{_version}
 
 %files
 %{_sbindir}/sftponly
