@@ -11,6 +11,7 @@ build:
 
 binary: stamp
 	dh_install
+	dh_installdocs
 	dh_strip
 	dh_gencontrol
 	dh_builddeb
