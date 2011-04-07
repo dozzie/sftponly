@@ -7,6 +7,12 @@ HEADS =
 PREFIX = /usr/local
 LIBCHROOT_PATH = $(PREFIX)/lib/sftponly/libchroot.so
 
+# for Red Hat, use
+#SFTP_PATH  = /usr/libexec/openssh/sftp-server
+SFTP_PATH  = /usr/lib/openssh/sftp-server
+SCP_PATH   = /usr/bin/scp
+RSYNC_PATH = /usr/bin/rsync
+
 CC = gcc -std=gnu99 
 LD = gcc
 CFLAGS := -g -Wall
@@ -36,6 +42,9 @@ libchroot.so: chroot.o open_hack.o getpwuid_hack.o
 # object file dependencies and compilation rules
 
 sftponly.o: CFLAGS += -D'LIBCHROOT_PATH="$(LIBCHROOT_PATH)"'
+sftponly.o: CFLAGS += -D'SUBSYSTEM_SCP="$(SCP_PATH)"'
+sftponly.o: CFLAGS += -D'SUBSYSTEM_SFTP="$(SFTP_PATH)"'
+sftponly.o: CFLAGS += -D'SUBSYSTEM_RSYNC="$(RSYNC_PATH)"'
 sftponly.o: get_login.h
 
 chroot.o: getpwuid_hack.h open_hack.h

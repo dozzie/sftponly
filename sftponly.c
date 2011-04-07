@@ -17,6 +17,18 @@
 #  define LIBCHROOT_PATH "/usr/local/lib/sftponly/libchroot.so"
 #endif
 
+#ifndef SUBSYSTEM_SCP
+#  define SUBSYSTEM_SCP "/usr/bin/scp"
+#endif
+#ifndef SUBSYSTEM_RSYNC
+#  define SUBSYSTEM_RSYNC "/usr/bin/rsync"
+#endif
+#ifndef SUBSYSTEM_SFTP
+// RHEL:   /usr/libexec/openssh/sftp-server
+// Debian: /usr/lib/openssh/sftp-server
+#  define SUBSYSTEM_SFTP "/usr/lib/openssh/sftp-server"
+#endif
+
 //----------------------------------------------------------------------------
 
 // taken directly from misc.c from OpenSSH sources
@@ -70,6 +82,27 @@ int username_correct(void)
 
 //----------------------------------------------------------------------------
 
+#define MAX_TOKENS 1024
+#define TOKEN_DELIM " \t"
+
+void tokenize_string(const char *str, char ***split)
+{
+  char *buffer = strdup(str);
+  char *token = NULL;
+  *split = calloc(MAX_TOKENS, sizeof(char*));
+
+  (*split)[0] = strtok_r(buffer, TOKEN_DELIM, &token);
+
+  // XXX: last pointer should be NULL
+  for (int i = 1; i < MAX_TOKENS - 1; ++i) {
+    (*split)[i] = strtok_r(NULL, TOKEN_DELIM, &token);
+    if ((*split)[i] == NULL)
+      break;
+  }
+}
+
+//----------------------------------------------------------------------------
+
 int main(int argc, char **argv)
 {
   // make sure the 0, 1, and 2 file descriptors are properly open
@@ -81,12 +114,26 @@ int main(int argc, char **argv)
   }
 
   // check call method
-  char *slash;
-  if (argc != 3 || strcmp(argv[1], "-c") != 0 ||
-      strcmp((slash = strrchr(argv[2], '/')) ? slash + 1 : argv[2],
-             "sftp-server") != 0) {
-    // nie-sftp
-    fprintf(stderr, "Usage outside sftp protocol prohibited\n");
+  if (argc != 3 || strcmp(argv[1], "-c") != 0) {
+    fprintf(stderr, "Usage outside file-copying protocol prohibited\n");
+    return 1;
+  }
+
+  char *subsystem = NULL;
+  char **args = NULL;
+
+  if (strncmp(argv[2], "rsync ", 6) == 0) {
+    subsystem = SUBSYSTEM_RSYNC;
+    tokenize_string(argv[2], &args);
+  } else if (strncmp(argv[2], "scp ", 4) == 0) {
+    subsystem = SUBSYSTEM_SCP;
+    tokenize_string(argv[2], &args);
+  } else if (strcmp(argv[2], SUBSYSTEM_SFTP) == 0) {
+    subsystem = SUBSYSTEM_SFTP;
+    args = calloc(2, sizeof(char *));
+    args[0] = subsystem;
+  } else {
+    fprintf(stderr, "Unrecognized copying protocol: %s\n", argv[2]);
     return 1;
   }
 
@@ -97,7 +144,9 @@ int main(int argc, char **argv)
   setuid(0);
   setenv("LD_PRELOAD", LIBCHROOT_PATH, 1);
 
-  execlp(argv[2], argv[2], NULL);
+  execv(subsystem, args);
+
+  fprintf(stderr, "Couldn't exec(%s): %s", subsystem, strerror(errno));
 
   return 1;
 }

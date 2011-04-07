@@ -27,7 +27,8 @@ cd sftponly-%{_version}
 
 %build
 cd sftponly-%{_version}
-make all PREFIX=%{_prefix} SYSCONFDIR=%{_sysconfdir}
+make all PREFIX=%{_prefix} SYSCONFDIR=%{_sysconfdir} \
+  SFTP_PATH=/usr/libexec/openssh/sftp-server
 
 %install
 
