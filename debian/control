@@ -1,8 +1,8 @@
 Source: sftponly
-Maintainer: Stanislaw Klekot (dozzie) <dozzie@jarowit.net>
+Maintainer: Stanislaw Klekot <dozzie@jarowit.net>
 Section: misc
 Priority: optional
-Build-Depends: zlib1g-dev, libssl-dev
+Build-Depends: libc-dev
 
 Package: sftponly
 Architecture: any
@@ -11,5 +11,4 @@ Description: simple chroot() shell for sftp-only accounts
  Simple zero-administration shell for chroot() accounts which require sftp
  access and nothing more.
  .
- Home page (git repository) of sftponly is
- http://dozzie.jarowit.net/code/sftponly.git
+ Home page of sftponly is http://dozzie.jarowit.net/trac/wiki/sftponly

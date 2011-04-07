@@ -1,15 +1,20 @@
 #!/usr/bin/make -f
 
+DIR_LOCATION = PREFIX=/usr SYSCONFDIR=/etc
+
 clean:
-	@echo cleaning
+	make clean
+	dh_clean
 
 build:
-	make sftponly SFTPSERVER_DIR=/usr/lib/openssh
-	make sftp-server.so
+	make all $(DIR_LOCATION)
+
+install: build stamp
+	make install $(DIR_LOCATION) DESTDIR=$(CURDIR)/debian/tmp
 
 .PHONY: stamp
 
-binary: stamp
+binary: install
 	dh_install
 	dh_installdocs
 	dh_strip

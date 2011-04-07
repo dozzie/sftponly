@@ -1,2 +1,2 @@
-sftponly usr/sbin
-sftp-server.so usr/lib/openssh
+/usr/bin/sftponly
+/usr/lib/sftponly/libchroot.so

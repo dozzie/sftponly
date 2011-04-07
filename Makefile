@@ -4,47 +4,64 @@ TARGET = sftponly
 OBJS = $(TARGET)
 HEADS = 
 
-SFTPSERVER_DIR =
-
-OPENSSH_VERSION = 5.1p1
-OPENSSH_DIR     = openssh-$(OPENSSH_VERSION)
-OPENSSH_TARBALL = $(OPENSSH_DIR).tar.gz
+PREFIX = /usr/local
+LIBCHROOT_PATH = $(PREFIX)/lib/sftponly/libchroot.so
 
 CC = gcc -std=gnu99 
 LD = gcc
-ifneq ($(SFTPSERVER_DIR),)
-CPPFLAGS = -D'SFTP_SERVER="$(SFTPSERVER_DIR)/sftp-server.so"'
-endif
 CFLAGS := -g -Wall
-LDFLAGS = -ldl
+LDFLAGS =
 
-.PHONY: clean run all
+#-----------------------------------------------------------------------------
 
-all: $(TARGET)
+.PHONY: all install
 
-sftp-server.so: $(OPENSSH_DIR)/sftp-server.so
-	cp $< $@
+all: libchroot.so sftponly
 
-$(OPENSSH_DIR)/sftp-server.so: $(OPENSSH_DIR)/Makefile
-	patch -p1 -d $(OPENSSH_DIR) < sftp-server.patch
-	make sftp-server.so 'LD=$(CC) -shared -fPIC' 'CC=$(CC) -fPIC' EXEEXT=.so -C $(OPENSSH_DIR)
+install: all
+	install -D -m 4755 sftponly     $(DESTDIR)$(PREFIX)/bin/sftponly
+	install -D -m  755 libchroot.so $(DESTDIR)$(LIBCHROOT_PATH)
 
-$(OPENSSH_DIR)/Makefile: $(OPENSSH_TARBALL)
-	tar zxf $<
-	cd $(OPENSSH_DIR) && ./configure --prefix=/usr
+#-----------------------------------------------------------------------------
+# linking
 
-%.o: %.c $(HEADS)
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+sftponly: sftponly.o
+	$(LD) $(LDFLAGS) -fPIC $^ -o $@
 
-$(TARGET): $(TARGET).o
-	$(LD) $(filter %.o, $^) -o $@ $(LDFLAGS)
+libchroot.so: LDFLAGS += -ldl
+libchroot.so: chroot.o open_hack.o getpwuid_hack.o
+	$(LD) $(LDFLAGS) -shared -fPIC $^ -o $@
 
-tags: $(addsuffix .c, $(OBJS)) $(HEADS)
+#-----------------------------------------------------------------------------
+# object file dependencies and compilation rules
+
+sftponly.o: CFLAGS += -D'LIBCHROOT_PATH="$(LIBCHROOT_PATH)"'
+sftponly.o: get_login.h
+
+chroot.o: getpwuid_hack.h open_hack.h
+open_hack.o: open_hack.h
+getpwuid_hack.o: getpwuid_hack.h get_login.h
+
+%.o: %.c
+	$(CC) -c -o $@ -fPIC $(CFLAGS) $(filter %.c,$^)
+
+#-----------------------------------------------------------------------------
+
+tags: $(wildcard *.c *.h)
 	ctags $^
 
-run: $(TARGET)
-	./$<
-
+.PHONY: clean
 clean:
 	rm -f core *.so *.o tags $(TARGET)
-	rm -rf $(OPENSSH_DIR)
+
+srpm: VERSION=$(shell awk '$$1 == "%define" && $$2 == "_version" {print $$3}' redhat/sftponly.spec)
+srpm:
+	rm -rf rpm-build
+	mkdir -p rpm-build/rpm/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+	git archive --format=tar --prefix=sftponly-$(VERSION)/ HEAD | gzip -9 > rpm-build/rpm/SOURCES/sftponly-$(VERSION).tar.gz
+	rpmbuild --define="%_usrsrc $$PWD/rpm-build" --define="%_topdir %{_usrsrc}/rpm" -bs redhat/sftponly.spec
+	mv rpm-build/rpm/SRPMS/sftponly-*.src.rpm .
+	rm -r rpm-build
+
+#-----------------------------------------------------------------------------
+# vim:ft=make:ts=4:noet
