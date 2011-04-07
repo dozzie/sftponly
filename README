@@ -7,10 +7,8 @@ user's home. The only thing the administrator needs to setup such an
 account is to `chmod u+s' on sftponly binary and to set it as shell for
 an account. All the rest will be handled by sftponly.
 
-The goal of zero-administration was achieved by using (almost)
-unmodified sftp-server from OpenSSH distribution compiled as .so dynamic
-library and loading it into memory just before chroot(). Thanks to this
-all the sftponly code is as short as 140 C lines.
+The goal of zero-administration was achieved by running sftp-server/scp/rsync
+with shared library libchroot.so pre-loaded (LD_PRELOAD), This library calls
+chroot() on loading.
 
-This version of sftponly is prepared for use with OpenSSH 5.1p1. For
-other versions building sftp-server.so should be easy adjustable.
+Thanks to this all the sftponly code is as short as 400 lines in C.

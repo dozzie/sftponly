@@ -1,3 +1,11 @@
+sftponly (2.0-1) stable; urgency=low
+
+  * Complete architectural rewrite.
+  * Removed build time requirement of OpenSSH sources.
+  * Added support for rsync and scp (sftp was already in).
+
+ -- Stanislaw Klekot <dozzie@jarowit.net>  Thu, 07 Apr 2011 11:19:10 +0200
+
 sftponly (1.0-1) stable; urgency=low
 
   Initial build.

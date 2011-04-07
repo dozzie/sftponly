@@ -1,4 +1,4 @@
-%define _version 1.0
+%define _version 2.0
 %define _release 1
 
 Summary: simple chroot() shell for sftp-only accounts
